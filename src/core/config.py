@@ -1,7 +1,7 @@
 from functools import cache
 
-from pydantic import SecretStr, Field
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field, SecretStr
+from pydantic_settings import BaseSettings
 from sqlalchemy.engine import URL
 
 

@@ -1,7 +1,6 @@
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
+from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 from src.core.config import get_settings
-
 
 _ENGINE: AsyncEngine | None = None
 
