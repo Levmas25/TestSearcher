@@ -14,6 +14,7 @@ FROM base AS runtime
 RUN groupadd --system app && useradd --system --gid app --home-dir /app app
 COPY --from=builder /app/.venv /app/.venv
 COPY --chown=app:app src ./src
+COPY --chown=app:app posts.csv ./posts.csv
 ENV PATH="/app/.venv/bin:$PATH"
 USER app
 EXPOSE 8000

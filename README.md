@@ -15,19 +15,24 @@ PostgreSQL stores `id`, `text`, `created_date`, and rubric associations. Rubrics
 
 Requires Docker with Linux containers and Docker Compose. Run commands from the repository root.
 
-1. Download the [assignment CSV](https://disk.yandex.ru/d/UYooXd9q2yqTMQ) and save it as `posts.csv`. The file is excluded from Git and the Docker image.
+1. Download the [assignment CSV](https://disk.yandex.ru/d/UYooXd9q2yqTMQ) and save it as `posts.csv`. The file is excluded from Git and copied into the Docker image during the build.
 2. Optionally copy `.env.example` to `.env` to override local credentials or exposed ports.
-3. Start the dependencies, initialize the data, then start the application:
+3. Start the application:
 
 ```sh
-docker compose up -d --wait postgres elasticsearch
-docker compose stop api worker
-docker compose build api
-docker compose run --rm --no-deps --volume "${PWD}/posts.csv:/data/posts.csv:ro" api python -m src.import_csv /data/posts.csv
-docker compose up --build -d --wait
+docker compose up --build -d
 ```
 
-The volume command works in PowerShell and POSIX shells. Stop if the importer fails; fix its reported error before starting the API and worker.
+4. On the first run, wait for the API container to start, then import the data:
+
+```sh
+docker compose exec api python -m src.import_csv posts.csv
+```
+
+The import creates missing tables and the Elasticsearch index. Run it before using
+the document endpoints. Data persists in Docker volumes, so ordinary restarts do
+not require another import. The worker retries automatically until initialization
+is complete.
 
 Default addresses:
 
@@ -121,7 +126,7 @@ Statuses: `422` for invalid requests, `404` for unknown routes, `405` for unsupp
 | `src/core/config.py` | Environment settings |
 | `Dockerfile`, `docker-compose.yml` | API, worker, PostgreSQL, Elasticsearch containers |
 
-The importer preserves text and naive source timestamps, parses rubric lists with `ast.literal_eval`, and generates stable IDs. Exact duplicate rows collapse; the provided 1,964 rows produce 1,500 unique documents. Rerunning the same import is safe. IDs recorded in deletion events are skipped; retaining those events preserves this behavior. Run imports while API and worker are stopped.
+The importer preserves text and naive source timestamps, parses rubric lists with `ast.literal_eval`, and generates stable IDs. Exact duplicate rows collapse; the provided 1,964 rows produce 1,500 unique documents. Rerunning the same import is safe. IDs recorded in deletion events are skipped; retaining those events preserves this behavior. Initial import runs with the stack up. Avoid sending document deletion requests during a reimport.
 
 For local Python execution, install Python 3.14+ and uv:
 
