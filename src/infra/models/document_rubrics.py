@@ -7,6 +7,7 @@ from src.db.base import Base
 
 
 class DocumentRubric(Base):
+    """ORM class for `document_rubrics` table that represents many to mant rel"""
     __tablename__ = "document_rubrics"
 
     document_id: Mapped[UUID] = mapped_column(ForeignKey("documents.id", ondelete="CASCADE"), primary_key=True)
