@@ -56,7 +56,7 @@ class ElasticsearchDocumentSearch:
         if self._client is not None:
             raise RuntimeError("Search client is already initialized.")
 
-        self._client = AsyncElasticsearch(self._url)
+        self._client = AsyncElasticsearch(self._url, request_timeout=10, max_retries=0)
         return self
 
     async def __aexit__(

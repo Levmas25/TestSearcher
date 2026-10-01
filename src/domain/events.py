@@ -13,3 +13,4 @@ class RegisterOutboxEvent:
 class ProcessedOutboxEvent(RegisterOutboxEvent):
 
     id: int
+    attempts: int = 0

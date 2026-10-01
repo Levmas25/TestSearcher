@@ -48,3 +48,11 @@ def get_settings() -> DBSettings:
 @cache
 def get_elastic_settings() -> ElasticSettings:
     return ElasticSettings()  # pyright: ignore[reportCallIssue]
+
+
+class WorkerSettings(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="WORKER_")
+
+    poll_interval: float = Field(default=2, gt=0)
+    retry_base: float = Field(default=2, gt=0)
+    retry_max: float = Field(default=300, gt=0)

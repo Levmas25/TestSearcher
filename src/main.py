@@ -26,6 +26,12 @@ def create_app() -> FastAPI:
     app = FastAPI(title="TestSearcher", version="0.1.0", lifespan=lifespan)
     register_exception_handlers(app)
     app.include_router(router)
+
+    @app.get("/health", tags=["health"])
+    async def health() -> dict[str, str]:
+        """Report HTTP liveness, independently of backing-service readiness."""
+        return {"status": "ok"}
+
     return app
 
 

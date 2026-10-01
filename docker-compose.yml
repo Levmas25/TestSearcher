@@ -22,12 +22,37 @@ services:
       elasticsearch:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/openapi.json', timeout=3).close()"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3).close()"]
       interval: 15s
       timeout: 5s
       retries: 3
       start_period: 20s
     init: true
+
+  worker:
+    build:
+      context: .
+    command: ["python", "-m", "src.worker"]
+    environment:
+      DB_USERNAME: ${POSTGRES_USER:-testsearcher}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-local-development-only}
+      DB_NAME: ${POSTGRES_DB:-testsearcher}
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      ELASTIC_HOST: elasticsearch
+      ELASTIC_PORT: "9200"
+      ELASTIC_INDEX: ${ELASTIC_INDEX:-documents}
+      WORKER_POLL_INTERVAL: "2"
+      WORKER_RETRY_BASE: "2"
+      WORKER_RETRY_MAX: "300"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    init: true
+    stop_grace_period: 30s
+    restart: unless-stopped
 
   postgres:
     image: postgres:18
