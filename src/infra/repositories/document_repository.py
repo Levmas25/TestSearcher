@@ -26,7 +26,7 @@ class DocumentRepo:
         result = await self._session.scalars(stmt)
         return [to_domain(model) for model in result.all()]
 
-    def _base_select(self) -> Select[tuple[Document]]:
+    def _base_select(self) -> Select[Document]:
         """Build a document query that eagerly loads rubrics."""
         return select(Document).options(selectinload(Document.rubrics))
 
