@@ -6,6 +6,4 @@
 .env
 .env.*
 tests
-*.csv
-!posts.csv
 *.log

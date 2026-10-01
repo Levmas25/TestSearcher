@@ -43,15 +43,27 @@ Default addresses:
 | PostgreSQL | localhost:5432 |
 | Elasticsearch | http://localhost:9200 |
 
-The default PostgreSQL database and user are `testsearcher`; the development password is `local-development-only`. Elasticsearch authentication is disabled for this local setup. Published ports bind to localhost.
+## Environment variables
 
-```sh
-docker compose logs -f api worker
-docker compose ps
-docker compose down
+Set container variables directly in the `environment` sections of
+`docker-compose.yml`, or copy `.env.example` to `.env` in the project root and
+adjust its values. Compose reads `.env` automatically and substitutes the
+`${VARIABLE:-default}` values used in the Compose file.
+
+For example:
+
+```dotenv
+POSTGRES_USER=testsearcher
+POSTGRES_PASSWORD=your_password
+POSTGRES_DB=testsearcher
+API_PORT=8000
+ELASTIC_PORT=9200
+ELASTIC_INDEX=documents
 ```
 
-Named volumes preserve data when containers stop. The importer creates missing tables, but does not migrate existing schemas. An older outbox table must include `attempts` and `next_attempt_at` before running the current worker.
+The Compose file maps `POSTGRES_*` values to the API and worker's `DB_*` settings.
+Keep their internal hosts as `postgres` and `elasticsearch`; published host ports
+can be changed in `.env`. Re-run `docker compose up -d` after changing settings.
 
 ## API endpoints
 
@@ -109,24 +121,33 @@ Statuses: `422` for invalid requests, `404` for unknown routes, `405` for unsupp
 - Live specification: http://localhost:8000/openapi.json.
 - Interactive documentation: http://localhost:8000/docs.
 
-## Important files and scripts
+## Project layout
 
-| Location | Purpose |
-| --- | --- |
-| `src/main.py` | FastAPI application, lifespan, and health endpoint |
-| `src/api/` | Routes, response schemas, dependencies, exception handlers |
-| `src/application/service.py` | Search and deletion use cases |
-| `src/application/worker.py` | Outbox deletion processing and retry policy |
-| `src/worker.py` | Worker entry point and graceful shutdown |
-| `src/import_csv.py` | CSV validation, database initialization, bulk indexing |
-| `src/infra/models/` | SQLAlchemy tables |
-| `src/infra/repositories/` | Document and outbox persistence |
-| `src/infra/unit_of_work.py` | SQL transaction boundary |
-| `src/infra/search/document_search.py` | Elasticsearch adapter |
-| `src/core/config.py` | Environment settings |
-| `Dockerfile`, `docker-compose.yml` | API, worker, PostgreSQL, Elasticsearch containers |
+```text
+src/
+|-- api/                 # Routes, schemas, dependencies, exception handlers
+|-- application/         # Service, worker logic, interfaces, exceptions
+|-- domain/              # Document and event dataclasses
+|-- core/                # Environment configuration
+|-- db/                  # Engine, sessions, declarative base
+|-- infra/
+|   |-- models/          # SQLAlchemy models
+|   |-- repositories/    # Document and outbox repositories
+|   |-- search/          # Elasticsearch adapter
+|   `-- unit_of_work.py  # Transaction management
+|-- main.py              # API entry point and health endpoint
+|-- worker.py            # Deletion worker entry point
+`-- import_csv.py        # CSV import and database/index initialization
+Dockerfile
+docker-compose.yml
+.env.example
+docs.json                # Exported OpenAPI specification
+pyproject.toml
+uv.lock
+posts.csv                # Downloaded input data (not tracked in Git)
+```
 
-The importer preserves text and naive source timestamps, parses rubric lists with `ast.literal_eval`, and generates stable IDs. Exact duplicate rows collapse; the provided 1,964 rows produce 1,500 unique documents. Rerunning the same import is safe. IDs recorded in deletion events are skipped; retaining those events preserves this behavior. Initial import runs with the stack up. Avoid sending document deletion requests during a reimport.
+## Local development
 
 For local Python execution, install Python 3.14+ and uv:
 
