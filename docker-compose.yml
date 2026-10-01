@@ -1,0 +1,76 @@
+name: testsearcher
+
+services:
+  api:
+    build:
+      context: .
+    ports:
+      - "127.0.0.1:${API_PORT:-8000}:8000"
+    environment:
+      DB_USERNAME: ${POSTGRES_USER:-testsearcher}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-local-development-only}
+      DB_NAME: ${POSTGRES_DB:-testsearcher}
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_DEBUG: "false"
+      ELASTIC_HOST: elasticsearch
+      ELASTIC_PORT: "9200"
+      ELASTIC_INDEX: ${ELASTIC_INDEX:-documents}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/openapi.json', timeout=3).close()"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    init: true
+
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-testsearcher}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local-development-only}
+      POSTGRES_DB: ${POSTGRES_DB:-testsearcher}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.5.1
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      node.store.allow_mmap: "false"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "127.0.0.1:${ELASTIC_PORT:-9200}:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    mem_limit: 2g
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          curl --fail --silent 'http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s'
+          | grep -Eq '"status":"(yellow|green)"'
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 30s
+
+volumes:
+  postgres_data:
+  elasticsearch_data:
