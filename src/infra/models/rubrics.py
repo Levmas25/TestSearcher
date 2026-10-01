@@ -11,13 +11,13 @@ if TYPE_CHECKING:
 
 
 class Rubric(Base):
-    """ORM class for `rubrics` table"""
+    """Map shared rubric identifiers."""
     __tablename__ = "rubrics"
 
     code: Mapped[str] = mapped_column(nullable=False, primary_key=True)
 
     documents: Mapped[list[Document]] = relationship(
-        "DocumentRubric",
+        secondary="document_rubrics",
         back_populates="rubrics",
         passive_deletes=True
     )

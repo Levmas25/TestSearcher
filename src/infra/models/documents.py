@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid7
 
@@ -14,16 +14,15 @@ if TYPE_CHECKING:
 
 
 class Document(Base):
-    """ORM class for `documents` table"""
+    """Map stored documents and their rubric associations."""
     __tablename__ = "documents"
 
-    id: Mapped[UUID] = mapped_column(default=uuid7, primary_key=True, index=True)
+    id: Mapped[UUID] = mapped_column(default=uuid7, primary_key=True)
     text: Mapped[str] = mapped_column(Text(), nullable=False)
-    created_date: Mapped[date] = mapped_column(DateTime(), nullable=False)
+    created_date: Mapped[datetime] = mapped_column(DateTime(), nullable=False)
 
     rubrics: Mapped[list[Rubric]] = relationship(
-        secondary="DocumentRubric",
+        secondary="document_rubrics",
         back_populates="documents",
         passive_deletes=True
     )
-    

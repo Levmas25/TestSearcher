@@ -7,8 +7,8 @@ from src.db.base import Base
 
 
 class DocumentRubric(Base):
-    """ORM class for `document_rubrics` table that represents many to mant rel"""
+    """Map the many-to-many association between documents and rubrics."""
     __tablename__ = "document_rubrics"
 
     document_id: Mapped[UUID] = mapped_column(ForeignKey("documents.id", ondelete="CASCADE"), primary_key=True)
-    rubric_code: Mapped[str] = mapped_column(ForeignKey("rubrics.code", ondelete="CASCADE"), primary_key=True) 
+    rubric_code: Mapped[str] = mapped_column(ForeignKey("rubrics.code", ondelete="CASCADE"), primary_key=True)

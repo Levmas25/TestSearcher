@@ -14,7 +14,7 @@ class DBSettings(BaseSettings):
     password: SecretStr
     debug: bool = False
 
-    
+
     @property
     def async_url(self) -> URL:
         return URL.create(
@@ -22,10 +22,11 @@ class DBSettings(BaseSettings):
             username=self.username,
             port=self.port,
             database=self.name,
-            password=self.password.get_secret_value()
+            password=self.password.get_secret_value(),
+            host=self.host
         )
 
 
 @cache
-def get_settings():
+def get_settings() -> DBSettings:
     return DBSettings()  # pyright: ignore[reportCallIssue]

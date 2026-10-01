@@ -29,4 +29,3 @@ async def dispose_engine() -> None:
     if _ENGINE is not None:
         await _ENGINE.dispose()
         _ENGINE = None
-    
