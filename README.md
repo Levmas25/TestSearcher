@@ -144,7 +144,6 @@ docker-compose.yml
 docs.json                # Exported OpenAPI specification
 pyproject.toml
 uv.lock
-posts.csv                # Downloaded input data (not tracked in Git)
 ```
 
 ## Local development
@@ -158,5 +157,3 @@ uv run python -m src.import_csv posts.csv
 uv run uvicorn src.main:app --reload
 uv run python -m src.worker
 ```
-
-Run the API and worker in separate terminals. Set `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME`, `DB_HOST`, and `DB_PORT` in the process environment. Optional Elasticsearch settings are `ELASTIC_HOST`, `ELASTIC_PORT`, and `ELASTIC_INDEX` (defaults: localhost, 9200, documents). `.env` is read by Compose, not automatically by the local Python processes. Worker settings use `WORKER_POLL_INTERVAL`, `WORKER_RETRY_BASE`, and `WORKER_RETRY_MAX` (defaults: 2, 2, 300 seconds).
