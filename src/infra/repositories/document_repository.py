@@ -3,7 +3,7 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from sqlalchemy.orm.strategy_options import selectinload
-from sqlalchemy.sql.expression import delete, select
+from sqlalchemy.sql.expression import delete, desc, select
 
 from src.infra.models.documents import Document
 
@@ -15,13 +15,13 @@ class DocumentRepo:
         self._session = session
 
     async def delete(self, document_id: UUID) -> bool:
-        stmt = delete(Document).where(Document.id == document_id)
+        stmt = delete(Document).where(Document.id == document_id).returning(Document.id)
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none() is not None
 
     async def get_documents(self, document_ids: Sequence[UUID]) -> Sequence[Document]:
         """Returns all documents with ids in `document_ids`"""
-        stmt = self._base_select().where(Document.id.in_(document_ids))
+        stmt = self._base_select().where(Document.id.in_(document_ids)).order_by(desc(Document.created_date))
         result = await self._session.scalars(stmt)
         return list(result.all())
 

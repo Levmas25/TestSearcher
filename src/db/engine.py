@@ -14,7 +14,7 @@ def get_async_engine() -> AsyncEngine:
             pool_pre_ping=True,
             echo=settings.debug,
             pool_recycle=3600,
-            connection_args={
+            connect_args={
                 "server_settings":
                     {
                         "timezone": "UTC"

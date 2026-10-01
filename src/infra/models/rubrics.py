@@ -12,9 +12,9 @@ if TYPE_CHECKING:
 
 class Rubric(Base):
     """ORM class for `rubrics` table"""
-    __tablename__ = "document_rubrics"
+    __tablename__ = "rubrics"
 
-    code: Mapped[str] = mapped_column(nullable=False)
+    code: Mapped[str] = mapped_column(nullable=False, primary_key=True)
 
     documents: Mapped[list[Document]] = relationship(
         "DocumentRubric",
