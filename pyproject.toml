@@ -1,0 +1,18 @@
+[project]
+name = "testsearcher"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "SomeWell", email = "sam15062005@yandex.ru" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "alembic",
+    "fastapi[standard]",
+    "pydantic",
+    "pydantic-settings",
+    "sqlalchemy",
+]
+
+
